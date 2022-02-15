@@ -5,6 +5,7 @@ from ..model.attack import Attack
 from ..tools.aircrack import Aircrack
 from ..tools.airodump import Airodump
 from ..tools.aireplay import Aireplay
+from ..tools.hashcat import Hashcat
 from ..config import Configuration
 from ..util.color import Color
 from ..util.timer import Timer
@@ -69,20 +70,52 @@ class AttackWPA(Attack):
             self.success = False
             return False
 
-        Color.pl('\n{+} {C}Cracking WPA Handshake:{W} Running {C}aircrack-ng{W} with' +
-                ' {C}%s{W} wordlist' % os.path.split(Configuration.wordlist)[-1])
+        if Configuration.use_aircrack:
+            Color.pl('\n{+} {C}Cracking WPA Handshake:{W} Running {C}aircrack-ng{W} with' +
+                     ' {C}%s{W} wordlist' % os.path.split(Configuration.wordlist)[-1])
 
-        # Crack it
-        key = Aircrack.crack_handshake(handshake, show_command=False)
-        if key is None:
-            Color.pl('{!} {R}Failed to crack handshake: {O}%s{R} did not contain password{W}' % Configuration.wordlist.split(os.sep)[-1])
-            self.success = False
-        else:
-            Color.pl('{+} {G}Cracked WPA Handshake{W} PSK: {G}%s{W}\n' % key)
-            self.crack_result = CrackResultWPA(handshake.bssid, handshake.essid, handshake.capfile, key)
-            self.crack_result.dump()
-            self.success = True
-        return self.success
+            key = Aircrack.crack_handshake(handshake, show_command=False)
+            if key is None:
+                Color.pl('\n{!} {R}Failed to crack handshake: {O}%s{R} did not contain password{W}' %
+                         Configuration.wordlist.split(os.sep)[-1])
+                self.success = False
+            else:
+                Color.pl('\n{+} {G}Cracked WPA Handshake{W} PSK: {G}%s{W}\n' % key)
+                self.crack_result = CrackResultWPA(handshake.bssid, handshake.essid, handshake.capfile, key)
+                self.crack_result.dump()
+                self.success = True
+            return self.success
+
+        if Configuration.use_hashcat:
+            Color.pl('\n{+} {C}Cracking WPA Handshake:{W} Running {C}Hashcat{W} with' +
+                     ' {C}%s{W} wordlist' % os.path.split(Configuration.wordlist)[-1])
+
+            key = Hashcat.crack_handshake(handshake, show_command=False)
+            if key is None:
+                Color.pl('\n{!} {R}Failed to crack handshake: {O}%s{R} did not contain password{W}' %
+                         Configuration.wordlist.split(os.sep)[-1])
+                self.success = False
+            else:
+                Color.pl('\n{+} {G}Cracked WPA Handshake{W} PSK: {G}%s{W}\n' % key)
+                self.crack_result = CrackResultWPA(handshake.bssid, handshake.essid, handshake.capfile, key)
+                self.crack_result.dump()
+                self.success = True
+            return self.success
+
+        if Configuration.use_tcp_hashcat:
+            Color.pl('\n{+} {C}Cracking WPA Handshake:{W} Running {C}Hashcat over TCP{W} with' +
+                     ' {C}rockyou.txt{W} wordlist')
+
+            key = Hashcat.crack_tcp_handshake(handshake, show_command=False)
+            if key is None:
+                Color.pl('\n{!} {R}Failed to crack handshake: {O}rockyou.txt{R} did not contain password{W}')
+                self.success = False
+            else:
+                Color.pl('\n{+} {G}Cracked WPA Handshake{W} PSK: {G}%s{W}\n' % key)
+                self.crack_result = CrackResultWPA(handshake.bssid, handshake.essid, handshake.capfile, key)
+                self.crack_result.dump()
+                self.success = True
+            return self.success
 
     def capture_handshake(self):
         '''Returns captured or stored handshake, otherwise None.'''

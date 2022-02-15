@@ -10,7 +10,7 @@ from .tools.macchanger import Macchanger
 
 class Configuration(object):
     ''' Stores configuration variables and functions for Wifite. '''
-    version = '2.6.0'
+    version = '2.5.8 b2'
 
     initialized = False  # Flag indicating config has been initialized
     temp_dir = None  # Temporary directory
@@ -92,6 +92,12 @@ class Configuration(object):
         cls.wpa_handshake_dir = 'hs'  # Dir to store handshakes
         cls.wpa_strip_handshake = False  # Strip non-handshake packets
         cls.ignore_old_handshakes = False  # Always fetch a new handshake
+
+        # Hashcat variables
+        cls.use_hashcat = False
+        cls.use_tcp_hashcat = False
+        cls.tcp_hashcat_hostname = '192.168.2.118'
+        cls.use_aircrack = True
 
         # PMKID variables
         cls.use_pmkid_only = False  # Only use PMKID Capture+Crack attack
@@ -312,7 +318,7 @@ class Configuration(object):
                 cls.ignore_cracked = False
             else:
                 cls.ignore_cracked = [ item['bssid'] for item in cracked_targets ]
-                Color.pl('{+} {C}option: {O}ignoring {R}%s{O} previously-cracked targets' % len(cls.ignore_cracked))            
+                Color.pl('{+} {C}option: {O}ignoring {R}%s{O} previously-cracked targets' % len(cls.ignore_cracked))
 
         if args.clients_only:
             cls.clients_only = True
@@ -412,6 +418,21 @@ class Configuration(object):
         if args.wpa_strip_handshake:
             cls.wpa_strip_handshake = True
             Color.pl('{+} {C}option:{W} will {G}strip{W} non-handshake packets')
+
+        # Added for Hashcat
+
+        if args.use_hashcat:
+            cls.use_hashcat = True
+            cls.use_tcp_hashcat = False
+            cls.use_aircrack = False
+            Color.pl('{+} {C}option:{W} will {G}use{W} Hashcat for cracking')
+
+        if args.use_tcp_hashcat:
+            cls.tcp_hashcat_hostname = args.tcp_hashcat_hostname
+            cls.use_tcp_hashcat = True
+            cls.use_hashcat = False
+            cls.use_aircrack = False
+            Color.pl('{+} {C}option:{W} will {G}use{W} Hashcat over TCP for cracking')
 
     @classmethod
     def parse_wps_args(cls, args):

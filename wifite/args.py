@@ -394,6 +394,29 @@ class Arguments(object):
         wpa.add_argument('-wpat', help=argparse.SUPPRESS, action='store',
                 dest='wpa_attack_timeout', type=int)
 
+        wpa.add_argument('--hashcat',
+            action='store_true',
+            dest='use_hashcat',
+            help=Color.s('Use {C}Hashcat{W} for cracking'))
+        wpa.add_argument('-hashcat', help=argparse.SUPPRESS, action='store_true',
+                dest='use_hashcat')
+
+        wpa.add_argument('--tcp-hashcat',
+            action='store_true',
+            dest='use_tcp_hashcat',
+            help=Color.s('Use {C}Hashcat over TCP{W} for cracking'))
+        wpa.add_argument('-tcp-hashcat', help=argparse.SUPPRESS, action='store_true',
+                dest='use_tcp_hashcat')
+
+        wpa.add_argument('--hostname',
+            action='store',
+            dest='tcp_hashcat_hostname',
+            metavar='[hostname]',
+            type=str,
+            help=Color.s('Hostname for {C}Hashcat over TCP{W}'))
+        wpa.add_argument('-tcp-hashcat-hostname', help=argparse.SUPPRESS, action='store',
+                dest='tcp_hashcat_hostname', type=str)
+
         # TODO: Uncomment the --strip option once it works
         '''
         wpa.add_argument('--strip',

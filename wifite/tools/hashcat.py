@@ -7,6 +7,16 @@ from ..util.process import Process
 from ..util.color import Color
 
 import os
+import socket
+
+#IP = socket.gethostbyname(socket.gethostname())
+#IP = '192.168.2.118'
+IP = Configuration.tcp_hashcat_hostname
+PORT = 4000
+ADDR = (IP, PORT)
+FORMAT = "utf-8"
+SIZE = 1024
+PASSWORD = 'mypass123'
 
 hccapx_autoremove = False  # change this to True if you want the hccapx files to be automatically removed
 
@@ -33,7 +43,7 @@ class Hashcat(Dependency):
         for additional_arg in ([], ['--show']):
             command = [
                 'hashcat',
-                '--quiet',
+                # '--quiet',
                 '-m', '22000',
                 hccapx_file,
                 Configuration.wordlist
@@ -51,10 +61,84 @@ class Hashcat(Dependency):
                 key = stdout.split(':', 5)[-1].strip()
                 break
 
-            if os.path.exists(hccapx_file) and hccapx_autoremove is True:
-                os.remove(hccapx_file)
+        if os.path.exists(hccapx_file) and hccapx_autoremove is True:
+            os.remove(hccapx_file)
 
+        print(key)
         return key
+
+    @staticmethod
+    def crack_tcp_handshake(handshake, show_command=False):
+        # Generate hccapx
+        hccapx_file = HcxPcapngTool.generate_hccapx_file(
+                handshake, show_command=show_command)
+
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        try:
+            client.connect(ADDR)
+        except ConnectionError:
+            Color.pl('{!} {R}Could not connect to {O}%s{W}' % IP)
+            return
+
+        welcome_msg = client.recv(SIZE).decode(FORMAT)
+        client.send(PASSWORD.encode(FORMAT))
+
+        if client.recv(SIZE).decode(FORMAT) == 'Password success':
+            #print('Password success')
+            Color.pl('{+} {C}Logged in {O}successfully{W}')
+            pass
+        else:
+            #print('Password failed')
+            Color.pl('{!} {R}Login failed, {O}check password{W}')
+            client.close()
+            return
+
+        with open(hccapx_file, "r") as f:
+            handshake = f.read()
+
+        send_data = f"UPLOAD[CMD]{handshake}"
+        client.send(send_data.encode(FORMAT))
+
+        while True:
+            data = client.recv(SIZE).decode(FORMAT)
+            cmd, msg = data.split("[CMD]")
+
+            if cmd == "OK":
+                #print(f"{msg}")
+                Color.pl('{+} {C}%s{W}' % msg)
+            elif cmd == 'CRACKING':
+                msg_percentage, msg_time_left, msg_kbps, msg_keys = msg.split('[MSG]')
+                # print(
+                #     f'Cracking WPA Handshake: {msg_percentage} ETA: {msg_time_left} @ {msg_kbps} (current keys: {msg_keys})')
+
+                status = '\r{+} {C}Cracking WPA Handshake: %s%%{W}' % msg_percentage
+                status += ' ETA: {C}%s{W}' % msg_time_left
+                status += ' @ {C}%s{W}' % msg_kbps
+                status += ' (current keys: {C}%s{W})' % msg_keys
+                Color.clear_entire_line()
+                Color.p(status)
+
+            elif cmd == 'CRACKED':
+                if msg != 'None':
+                    #print(f'{msg}')
+                    #Color.pl('{+} Password is: {C}%s{W}' % msg)
+                    key = msg
+                    client.send('LOGOUT'.encode(FORMAT))
+                    return key
+                else:
+                    #print('Not cracked')
+                    Color.pl('{!} {R} Failed to crack password{W}')
+                    client.send('LOGOUT'.encode(FORMAT))
+                    break
+            elif cmd == 'ABORTED':
+                pass
+            elif cmd == 'DONE':
+                pass
+
+        #print("Disconnected from the server.")
+        Color.pl('{+} {C}Disconnected from [O}%s{W}' % IP)
+        client.close()
 
     @staticmethod
     def crack_pmkid(pmkid_file, verbose=False):
