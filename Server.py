@@ -5,15 +5,25 @@ import threading
 from pyhashcat import Hashcat
 from datetime import datetime
 from time import sleep
+import argparse
 from wifite.util.color import Color
 
-IP = ''
-PORT = 4000
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--ip', type=str, help='IP address of the server', required=True)
+parser.add_argument('--port', type=int, help='Listening port of the server', required=True)
+parser.add_argument('--password', type=str, help='Set the password for the server', required=True)
+parser.add_argument('--wordlist', type=str, help='Wordlist to used for cracking', required=True)
+
+args = parser.parse_args()
+
+IP = args.ip
+PORT = args.port
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
 HANDSHAKE_DATA_PATH = "hs"
-PASSWORD = 'mypass123'
+PASSWORD = args.password
 
 
 def print_banner():
@@ -50,7 +60,7 @@ def cracking(conn, handshake, dictionary):
     open(recent_file_name, 'x')
     hc.outfile = recent_file_name
     hc.outfile_format = 2  # plain text
-    Color.pl('{!} {C}Writing to {R}%s{W}' % hc.outfile)
+    Color.pl('{!} {C}Writing hash to {R}%s{W}' % hc.outfile)
     hc.attack_mode = 0
     hc.hash_mode = 22000
     hc.workload_profile = 2
@@ -119,10 +129,10 @@ def handle_client(conn, addr):
     conn.send("Welcome to the hash cracking server".encode(FORMAT))
 
     if conn.recv(SIZE).decode(FORMAT) == PASSWORD:
-        Color.pl('{+} {C}Password {G}success')
+        Color.pl('{+} {C}Login {G}success')
         conn.send('Password success'.encode(FORMAT))
     else:
-        Color.pl('{!} {C}Password {R}failed')
+        Color.pl('{!} {C}Login {R}failed')
         conn.send('Password failed'.encode(FORMAT))
         conn.close()
         return
@@ -133,7 +143,7 @@ def handle_client(conn, addr):
         cmd = data[0]
 
         if cmd == "UPLOAD":
-            Color.pl('{!} {C}File received')
+            Color.pl('{!} {C}Hash received')
             handshake = data[1]
             filepath = os.path.join(HANDSHAKE_DATA_PATH, 'handshake.hccapx')
             with open(filepath, "w") as handshake_file:
@@ -142,7 +152,7 @@ def handle_client(conn, addr):
             send_data = "OK[CMD]File uploaded successfully"
             conn.send(send_data.encode(FORMAT))
 
-            cracked = cracking(conn, handshake_file, 'rockyou.txt')
+            cracked = cracking(conn, handshake_file, args.wordlist)
             if cracked != None:
                 conn.send(f'CRACKED[CMD]{cracked}'.encode(FORMAT))
             else:

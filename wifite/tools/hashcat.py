@@ -12,11 +12,11 @@ import socket
 #IP = socket.gethostbyname(socket.gethostname())
 #IP = '192.168.2.118'
 IP = Configuration.tcp_hashcat_hostname
-PORT = 4000
+PORT = Configuration.tcp_hashcat_port
 ADDR = (IP, PORT)
 FORMAT = "utf-8"
 SIZE = 1024
-PASSWORD = 'mypass123'
+PASSWORD = Configuration.tcp_hashcat_password
 
 hccapx_autoremove = False  # change this to True if you want the hccapx files to be automatically removed
 
@@ -128,7 +128,7 @@ class Hashcat(Dependency):
                     return key
                 else:
                     #print('Not cracked')
-                    Color.pl('{!} {R} Failed to crack password{W}')
+                    Color.pl('{!} {R} Failed to crack hash{W}')
                     client.send('LOGOUT'.encode(FORMAT))
                     break
             elif cmd == 'ABORTED':

@@ -417,6 +417,24 @@ class Arguments(object):
         wpa.add_argument('-tcp-hashcat-hostname', help=argparse.SUPPRESS, action='store',
                 dest='tcp_hashcat_hostname', type=str)
 
+        wpa.add_argument('--port',
+            action='store',
+            dest='tcp_hashcat_port',
+            metavar='[port]',
+            type=int,
+            help=Color.s('Port for {C}Hashcat over TCP{W}'))
+        wpa.add_argument('-tcp-hashcat-port', help=argparse.SUPPRESS, action='store',
+                dest='tcp_hashcat_port', type=int)
+
+        wpa.add_argument('--password',
+            action='store',
+            dest='tcp_hashcat_password',
+            metavar='[password]',
+            type=str,
+            help=Color.s('Password for {C}Hashcat over TCP{W}'))
+        wpa.add_argument('-tcp-hashcat-password', help=argparse.SUPPRESS, action='store',
+                dest='tcp_hashcat_password', type=str)
+
         # TODO: Uncomment the --strip option once it works
         '''
         wpa.add_argument('--strip',

@@ -97,6 +97,8 @@ class Configuration(object):
         cls.use_hashcat = False
         cls.use_tcp_hashcat = False
         cls.tcp_hashcat_hostname = '192.168.2.118'
+        cls.tcp_hashcat_port = 4000
+        cls.tcp_hashcat_password = 'mypass123'
         cls.use_aircrack = True
 
         # PMKID variables
@@ -429,6 +431,8 @@ class Configuration(object):
 
         if args.use_tcp_hashcat:
             cls.tcp_hashcat_hostname = args.tcp_hashcat_hostname
+            cls.tcp_hashcat_port = args.tcp_hashcat_port
+            cls.tcp_hashcat_password = args.tcp_hashcat_password
             cls.use_tcp_hashcat = True
             cls.use_hashcat = False
             cls.use_aircrack = False
