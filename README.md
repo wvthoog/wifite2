@@ -66,7 +66,7 @@ optional arguments:
 ```
 
 Starting up Server.py script on the server side
-![Server side process](https://imgur.com/iPwKfwW.gif)
+<img src="/images/server-process1.gif?raw=true">
 
 Android side (Nethunter)
 --------------
@@ -88,8 +88,6 @@ optional arguments:
   --no-pmkid           Don't use PMKID against the target
 ```
 
-
-Launching Wifite with Hashcat over TCP connecting to the server
-![Android side process](https://imgur.com/bXzvuw7.gif)
-
+Launching Wifite with Hashcat over TCP on a Nethunter phone
+<img src="/images/android-process1.gif?raw=true">
 
