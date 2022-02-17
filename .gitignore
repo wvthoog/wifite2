@@ -28,3 +28,4 @@ Module.symvers
 *.pcap
 *.cap
 *.json
+images/
