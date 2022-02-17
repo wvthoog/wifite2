@@ -8,6 +8,8 @@ Wifite and Hashcat over TCP
 This repo is a fork of [`wifite`](https://github.com/kimocoder/wifite2/) from kimocoder which uses a backend Hashcat 
 server to crack captured 4-way handhakes.
 
+A more lengty tutorial can be found [`here`](https://wvthoog.nl/wifite-hashcat-tcp/)
+
 Build and install Pyhashcat and Hashcat
 --------------------
 Install the Pyhashcat library together with Hashcat version 6.1.1
